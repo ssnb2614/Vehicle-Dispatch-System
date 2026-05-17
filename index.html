@@ -146,7 +146,7 @@
 
         <div class="card-header">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            <h1>VEHICLE DISPATCH</h1>
+            <h1> 車輛派遣登錄系統</h1>
             <span style="font-size: 24px;">★</span>
         </div>
 
@@ -155,7 +155,7 @@
                 
                 <div class="form-group" style="display: flex; gap: 10px;">
                     <div style="flex: 2;">
-                        <label class="form-label">A. 車號 (CAR ID)</label>
+                        <label class="form-label">A. 車號 (LICENSE PLATE)</label>
                         <select class="form-select" id="carId" required>
                             <option value="" disabled selected>選擇載具...</option>
                             </select>
@@ -168,11 +168,11 @@
 
                 <div class="form-group" style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
-                        <label class="form-label">C. 出發 (DEPART)</label>
+                        <label class="form-label">C. 預計出發 (DEPART)</label>
                         <input type="datetime-local" class="form-control" id="startTime" required>
                     </div>
                     <div style="flex: 1;">
-                        <label class="form-label">D. 返回 (RETURN)</label>
+                        <label class="form-label">D. 預計返回 (RETURN)</label>
                         <input type="datetime-local" class="form-control" id="endTime" required>
                     </div>
                 </div>
@@ -180,21 +180,21 @@
                 <div class="form-group" style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
                         <label class="form-label">E. 駕駛 (DRIVER)</label>
-                        <input type="text" class="form-control" id="driver" required placeholder="特戰代號/姓名">
+                        <input type="text" class="form-control" id="driver" required placeholder="姓名">
                     </div>
                     <div style="flex: 1;">
                         <label class="form-label">F. 電話 (COMMS)</label>
-                        <input type="tel" class="form-control" id="phone" required placeholder="通訊頻率/手機">
+                        <input type="tel" class="form-control" id="phone" required placeholder="手機號碼">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">G. 事由 & H. 目的地 (MISSION OP)</label>
-                    <input type="text" class="form-control" id="reason" required placeholder="事由 (例: 斬首行動 / 買便當)" style="margin-bottom: 5px;">
-                    <input type="text" class="form-control" id="destination" required placeholder="目的地座標">
+                    <input type="text" class="form-control" id="reason" required placeholder="要幹嘛" style="margin-bottom: 5px;">
+                    <input type="text" class="form-control" id="destination" required placeholder="去哪裡">
                 </div>
 
-                <button type="submit" class="btn-deploy" id="submitBtn">CONFIRM DEPLOYMENT (確認出勤)</button>
+                <button type="submit" class="btn-deploy" id="submitBtn">CONFIRM DEPLOYMENT (確認派遣)</button>
             </form>
         </div>
     </div>
@@ -226,7 +226,7 @@
                 }
             })
             .catch(err => {
-                alert("總部斷線，請檢查 API 網址！");
+                alert("系統斷線，請檢查 API 網址！");
                 document.getElementById('loadingOverlay').innerHTML = "通訊中斷";
             });
         });
@@ -268,7 +268,7 @@
                     alert(data.message);
                     document.getElementById('carForm').reset();
                 } else {
-                    alert("❌ 任務失敗：" + data.message);
+                    alert("❌ 登錄失敗：" + data.message);
                 }
             })
             .catch(error => {
