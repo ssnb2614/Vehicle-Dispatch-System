@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>戰術車輛調度終端機</title>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #273b4e;
+            --card-bg: #dfd6b8;
+            --dark-blue: #1b2836;
+            --border-color: #5c768d;
+            --accent-red: #c04235;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            /* 模擬背景網格線 */
+            background-image: 
+                linear-gradient(var(--border-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size: 30px 30px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .tactical-card {
+            background-color: var(--card-bg);
+            border: 4px solid var(--dark-blue);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 頂部軍銜與標題 */
+        .card-header {
+            background-color: var(--dark-blue);
+            color: var(--card-bg);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 4px solid #111;
+        }
+
+        .card-header h1 {
+            font-family: 'Teko', sans-serif;
+            font-size: 36px;
+            letter-spacing: 2px;
+            margin: 0;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .content-area {
+            padding: 20px;
+        }
+
+        /* 表單元素樣式 */
+        .form-group {
+            margin-bottom: 15px;
+            background-color: rgba(27, 40, 54, 0.05);
+            border: 2px solid var(--dark-blue);
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .form-label {
+            display: block;
+            font-family: 'Teko', sans-serif;
+            font-size: 22px;
+            color: var(--dark-blue);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #f4eee1;
+            border: 2px solid var(--border-color);
+            padding: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            border-radius: 4px;
+        }
+
+        .form-control:read-only {
+            background-color: #d1c8aa;
+            color: #555;
+        }
+
+        /* 戰術按鈕 */
+        .btn-deploy {
+            background-color: var(--dark-blue);
+            color: var(--card-bg);
+            font-family: 'Teko', sans-serif;
+            font-size: 28px;
+            letter-spacing: 2px;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: 0.2s;
+            margin-top: 10px;
+            border: 2px solid #111;
+        }
+
+        .btn-deploy:hover {
+            background-color: var(--accent-red);
+            color: white;
+        }
+
+        .btn-deploy:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        /* 載入中的遮罩 */
+        #loadingOverlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(43, 63, 79, 0.9);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Teko', sans-serif;
+            font-size: 30px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tactical-card">
+        <div id="loadingOverlay">連線至總部資料庫...</div>
+
+        <div class="card-header">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <h1>VEHICLE DISPATCH</h1>
+            <span style="font-size: 24px;">★</span>
+        </div>
+
+        <div class="content-area">
+            <form id="carForm">
+                
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <div style="flex: 2;">
+                        <label class="form-label">A. 車號 (CAR ID)</label>
+                        <select class="form-select" id="carId" required>
+                            <option value="" disabled selected>選擇載具...</option>
+                            </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="form-label">B. 車種 (TYPE)</label>
+                        <input type="text" class="form-control" id="carType" readonly placeholder="自動帶入">
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label class="form-label">C. 出發 (DEPART)</label>
+                        <input type="datetime-local" class="form-control" id="startTime" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="form-label">D. 返回 (RETURN)</label>
+                        <input type="datetime-local" class="form-control" id="endTime" required>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label class="form-label">E. 駕駛 (DRIVER)</label>
+                        <input type="text" class="form-control" id="driver" required placeholder="特戰代號/姓名">
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="form-label">F. 電話 (COMMS)</label>
+                        <input type="tel" class="form-control" id="phone" required placeholder="通訊頻率/手機">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">G. 事由 & H. 目的地 (MISSION OP)</label>
+                    <input type="text" class="form-control" id="reason" required placeholder="事由 (例: 斬首行動 / 買便當)" style="margin-bottom: 5px;">
+                    <input type="text" class="form-control" id="destination" required placeholder="目的地座標">
+                </div>
+
+                <button type="submit" class="btn-deploy" id="submitBtn">CONFIRM DEPLOYMENT (確認出勤)</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ★★★ 把你的 Web App API 網址貼在下面 ★★★
+        const API_URL = "https://script.google.com/macros/s/AKfycbzVoaeLSDQJm-qqJI6zABLd2IjPkLsEvvSN6S5t-rtJwwG8eNyh9FNKX4tAoveBl1KfLQ/exec";
+        
+        let availableCars = [];
+
+        // 網頁一載入，馬上跟 Google 要車輛清單
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch(API_URL)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    availableCars = data.data;
+                    const select = document.getElementById('carId');
+                    availableCars.forEach(car => {
+                        let opt = document.createElement('option');
+                        opt.value = car.id;
+                        opt.textContent = car.id;
+                        select.appendChild(opt);
+                    });
+                    // 資料載完，關閉遮罩
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                } else {
+                    alert("獲取車輛清單失敗：" + data.message);
+                }
+            })
+            .catch(err => {
+                alert("總部斷線，請檢查 API 網址！");
+                document.getElementById('loadingOverlay').innerHTML = "通訊中斷";
+            });
+        });
+
+        // 監聽車號選單，一改變就自動填寫車種
+        document.getElementById('carId').addEventListener('change', function() {
+            const selectedId = this.value;
+            const carData = availableCars.find(c => c.id === selectedId);
+            if(carData) {
+                document.getElementById('carType').value = carData.type;
+            }
+        });
+
+        // 提交表單的邏輯 (跟之前一樣)
+        document.getElementById('carForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "DEPLOYING... (寫入資料庫中)";
+
+            const payload = {
+                carId: document.getElementById('carId').value,
+                carType: document.getElementById('carType').value,
+                startTime: document.getElementById('startTime').value,
+                endTime: document.getElementById('endTime').value,
+                driver: document.getElementById('driver').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                reason: document.getElementById('reason').value.trim(),
+                destination: document.getElementById('destination').value.trim()
+            };
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    alert(data.message);
+                    document.getElementById('carForm').reset();
+                } else {
+                    alert("❌ 任務失敗：" + data.message);
+                }
+            })
+            .catch(error => {
+                alert("網路爆炸，或者你 API 網址貼錯了。");
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = "CONFIRM DEPLOYMENT (確認出勤)";
+            });
+        });
+    </script>
+</body>
+</html>
