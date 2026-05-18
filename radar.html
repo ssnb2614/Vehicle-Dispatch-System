@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENTCOM - 車輛動態管制看板</title>
+    <title>車輛動態管制看板</title>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -249,7 +249,7 @@
         <div class="card-header">
             <div class="rank-insignia">︽</div>
             <h1>VEHICLE DISPATCH DISPLAY BOARD</h1>
-            <div class="star-icon">︽</div>
+            <div class="rank-insignia">︽</div>
         </div>
 
         <div class="stats-row">
@@ -283,7 +283,6 @@
     </div>
 
     <script>
-    // ★★★ 已經幫你把真正的 API 網址換上去了，不用謝 ★★★
         const API_URL = "https://script.google.com/macros/s/AKfycbzVoaeLSDQJm-qqJI6zABLd2IjPkLsEvvSN6S5t-rtJwwG8eNyh9FNKX4tAoveBl1KfLQ/exec";
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -407,7 +406,7 @@
                         
                         log.innerHTML = `
                             <span class="log-target">▶ ${b.carId} (${b.driver})</span>
-                            <span class="log-time">${sTime} - ${eTime} | OP: ${b.reason}；${b.destination}</span>
+                            <span class="log-time">${sTime}-${eTime} | OP: ${b.reason}；${b.destination}</span>
                         `;
                         dayDiv.appendChild(log);
                     }
