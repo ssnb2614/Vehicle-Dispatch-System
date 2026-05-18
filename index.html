@@ -153,7 +153,7 @@
         <div class="content-area">
             <form id="carForm">
                 
-                <div class="form-group" style="display: flex; gap: 10px;">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="flex: 2;">
                         <label class="form-label">A. 車號 (LICENSE PLATE)</label>
                         <select class="form-select" id="carId" required>
@@ -165,13 +165,13 @@
                         <input type="text" class="form-control" id="carType" readonly placeholder="自動帶入">
                     </div>
                 </div>
-
-                <div class="form-group" style="display: flex; gap: 10px;">
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 15px;">
                     <div style="flex: 1;">
                         <label class="form-label">C. 預計出發 (DEPART)</label>
                         <input type="datetime-local" class="form-control" id="startTime" required>
                     </div>
-                    <div style="flex: 1;">
+                    <div>
                         <label class="form-label">D. 預計返回 (RETURN)</label>
                         <input type="datetime-local" class="form-control" id="endTime" required>
                     </div>
@@ -194,7 +194,7 @@
                     <input type="text" class="form-control" id="destination" required placeholder="去哪裡">
                 </div>
 
-                <button type="submit" class="btn-deploy" id="submitBtn">確認派遣</button>
+                <button type="submit" class="btn-deploy" id="submitBtn">CONFIRM DEPLOYMENT<br>確認派遣</button>
             </form>
         </div>
     </div>
@@ -245,7 +245,7 @@
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerText = "DEPLOYING... (寫入資料庫中)";
+            btn.innerText = "DEPLOYING...<br>寫入資料庫中";
 
             const payload = {
                 carId: document.getElementById('carId').value,
@@ -276,7 +276,7 @@
             })
             .finally(() => {
                 btn.disabled = false;
-                btn.innerText = "CONFIRM DEPLOYMENT (確認出勤)";
+                btn.innerText = "CONFIRM DEPLOYMENT<br>確認出勤";
             });
         });
     </script>
