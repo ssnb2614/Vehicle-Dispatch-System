@@ -211,7 +211,8 @@
             .then(res => res.json())
             .then(data => {
                 if(data.status === "success") {
-                    availableCars = data.data;
+                    // ✅ 修正點 1：去接新版 API 的 data.cars
+                    availableCars = data.cars; 
                     const select = document.getElementById('carId');
                     availableCars.forEach(car => {
                         let opt = document.createElement('option');
@@ -226,8 +227,10 @@
                 }
             })
             .catch(err => {
-                alert("系統斷線，請檢查 API 網址！");
+                // 如果再跑到這裡，你就要去面壁思過了
+                alert("系統斷線，請打開 F12 看看你又搞砸了什麼！");
                 document.getElementById('loadingOverlay').innerHTML = "通訊中斷";
+                console.error(err);
             });
         });
 
@@ -240,12 +243,13 @@
             }
         });
 
-        // 提交表單的邏輯 (跟之前一樣)
+        // 提交表單的邏輯
         document.getElementById('carForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerText = "DEPLOYING...<br>寫入資料庫中";
+            // ✅ 修正點 2：用 innerHTML 才能讓 <br> 真的換行
+            btn.innerHTML = "DEPLOYING...<br>寫入資料庫中";
 
             const payload = {
                 carId: document.getElementById('carId').value,
@@ -273,10 +277,12 @@
             })
             .catch(error => {
                 alert("網路爆炸，或者你 API 網址貼錯了。");
+                console.error(error);
             })
             .finally(() => {
                 btn.disabled = false;
-                btn.innerText = "CONFIRM DEPLOYMENT<br>確認出勤";
+                // ✅ 修正點 3：用 innerHTML
+                btn.innerHTML = "CONFIRM DEPLOYMENT<br>確認派遣";
             });
         });
     </script>
