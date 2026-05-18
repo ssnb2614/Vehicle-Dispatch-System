@@ -248,14 +248,14 @@
 
         <div class="card-header">
             <div class="rank-insignia">︽</div>
-            <h1>ASSET COMMAND CENTER</h1>
-            <div class="star-icon">★</div>
+            <h1>VEHICLE DISPATCH DISPLAY BOARD</h1>
+            <div class="star-icon">︽</div>
         </div>
 
         <div class="stats-row">
             <div class="stat-box">
                 <div class="stat-num"><span class="cross-icon">+</span><span id="stat-total">0</span></div>
-                <div class="stat-label">TOTAL FLEET</div>
+                <div class="stat-label">TOTAL</div>
             </div>
             <div class="stat-box">
                 <div class="stat-num" id="stat-ready">0</div>
@@ -339,10 +339,10 @@
                 let badgeColor = "var(--status-gray)";
                 let engStatus = "UNKNOWN";
                 if(finalStatus === '可派遣') { badgeColor = "var(--status-green)"; engStatus = "READY"; }
-                if(finalStatus === '出勤中') { badgeColor = "var(--status-blue)"; engStatus = "IN FIELD"; }
+                if(finalStatus === '出勤中') { badgeColor = "var(--status-blue)"; engStatus = "DEPLOYED"; }
                 if(finalStatus === '需注意') { badgeColor = "var(--status-orange)"; engStatus = "WARNING"; countReady++; }
-                if(finalStatus === '報修中') { badgeColor = "var(--status-red)"; engStatus = "CRITICAL"; }
-                if(finalStatus === '維修中') { badgeColor = "var(--status-gray)"; engStatus = "OFFLINE"; }
+                if(finalStatus === '報修中') { badgeColor = "var(--status-red)"; engStatus = "TBR"; }
+                if(finalStatus === '維修中') { badgeColor = "var(--status-gray)"; engStatus = "REP"; }
 
                 let noteHtml = car.note ? `<div class="weapon-note" style="display:block;">⚠️ INTEL: ${car.note}</div>` : '';
 
@@ -406,8 +406,8 @@
                         let eTime = new Date(b.endTime).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
                         
                         log.innerHTML = `
-                            <span class="log-target">▶ TARGET: ${b.carId} (${b.driver})</span>
-                            <span class="log-time">${sTime} - ${eTime} | OP: ${b.destination}</span>
+                            <span class="log-target">▶ ${b.carId} (${b.driver})</span>
+                            <span class="log-time">${sTime} - ${eTime} | OP: ${b.reason}；${b.destination}</span>
                         `;
                         dayDiv.appendChild(log);
                     }
