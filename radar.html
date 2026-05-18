@@ -254,7 +254,7 @@
 
         <div class="stats-row">
             <div class="stat-box">
-                <div class="stat-num"><span class="cross-icon">+</span><span id="stat-total">0</span></div>
+                <div class="stat-num" id="stat-total">0</div>
                 <div class="stat-label">TOTAL</div>
             </div>
             <div class="stat-box">
@@ -343,15 +343,19 @@
                 if(finalStatus === '報修中') { badgeColor = "var(--status-red)"; engStatus = "TBR"; }
                 if(finalStatus === '維修中') { badgeColor = "var(--status-gray)"; engStatus = "REP"; }
 
+                // (前略... 狀態覆蓋邏輯與 badgeColor 決定)
+                
                 let noteHtml = car.note ? `<div class="weapon-note" style="display:block;">⚠️ INTEL: ${car.note}</div>` : '';
+                
+                // ✅ 取出專屬圖示，如果後端有傳就用，沒有就預設 🚗
+                let carIcon = car.icon || "🚗";
 
                 // 產出像武器裝備一樣的卡片
                 let item = document.createElement('div');
                 item.className = 'weapon-card';
                 item.innerHTML = `
                     <div class="weapon-header">
-                        <span class="weapon-icon">🚗</span>
-                        <span class="weapon-name">${car.id}</span>
+                        <span class="weapon-icon">${carIcon}</span> <span class="weapon-name">${car.id}</span>
                         <span class="weapon-status" style="background-color: ${badgeColor};">${engStatus}</span>
                     </div>
                     <div class="weapon-stats">CLASS: ${car.type}</div>
