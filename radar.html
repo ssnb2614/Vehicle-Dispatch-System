@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENTCOM - 車輛動態管制看板</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-grid: #2a3c4f;
+            --grid-line: #375068;
+            --card-base: #d2c8b0;
+            --dark-blue: #1b2836;
+            --text-gold: #e2b965;
+            --health-red: #b94033;
+            --text-light: #e5e5e5;
+            
+            /* 狀態顏色 */
+            --status-green: #388e3c;
+            --status-orange: #f57c00;
+            --status-red: #d32f2f;
+            --status-gray: #616161;
+            --status-blue: #1976d2; /* 出勤中 */
+        }
+
+        body {
+            background-color: var(--bg-grid);
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 40px 40px;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .commander-card {
+            background-color: var(--card-base);
+            border: 5px solid var(--dark-blue);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 850px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 頂部軍階標題區 */
+        .card-header {
+            background-color: var(--dark-blue);
+            color: var(--text-light);
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            border-bottom: 5px solid #111;
+        }
+
+        .rank-insignia {
+            color: var(--text-gold);
+            font-size: 40px;
+            line-height: 1;
+            margin-right: 15px;
+            transform: scaleY(0.8);
+        }
+
+        .card-header h1 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 42px;
+            letter-spacing: 3px;
+            margin: 0;
+            flex-grow: 1;
+            text-transform: uppercase;
+            text-align: left;
+        }
+
+        .star-icon { color: var(--status-gray); font-size: 30px; }
+
+        /* 戰術數值條 (還原 Health, Move, Attack 那排) */
+        .stats-row {
+            display: flex;
+            background-color: var(--dark-blue);
+            border-bottom: 5px solid #111;
+        }
+
+        .stat-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0;
+            border-right: 2px solid #334;
+        }
+        .stat-box:last-child { border-right: none; }
+
+        .stat-num {
+            font-family: 'Oswald', sans-serif;
+            font-size: 50px;
+            color: var(--text-light);
+            line-height: 1.1;
+        }
+        
+        /* 特別把總數量做成紅十字造型的顏色 */
+        #stat-total { color: var(--text-gold); }
+        .cross-icon { color: var(--health-red); font-weight: bold; margin-right: 5px; }
+
+        .stat-label {
+            background-color: var(--card-base);
+            width: 90%;
+            text-align: center;
+            font-family: 'Oswald', sans-serif;
+            font-size: 16px;
+            color: var(--dark-blue);
+            font-weight: bold;
+            padding: 2px 0;
+            margin-top: 5px;
+            border-radius: 2px;
+        }
+
+        /* 裝備區 (車輛列表) */
+        .weapons-section {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            border-bottom: 5px solid var(--dark-blue);
+        }
+        @media (max-width: 600px) {
+            .weapons-section { grid-template-columns: 1fr; }
+        }
+
+        .weapon-card {
+            border: 3px solid var(--dark-blue);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            background-color: #dfd6b8; /* 稍微亮一點的底色 */
+        }
+
+        .weapon-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            border-bottom: 2px solid var(--dark-blue);
+            padding-bottom: 5px;
+        }
+
+        .weapon-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .weapon-name {
+            font-family: 'Oswald', sans-serif;
+            font-size: 24px;
+            color: var(--dark-blue);
+            flex-grow: 1;
+        }
+
+        .weapon-stats {
+            font-family: 'Oswald', sans-serif;
+            font-size: 16px;
+            color: #555;
+            text-transform: uppercase;
+        }
+
+        .weapon-status {
+            font-family: 'Oswald', sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: white;
+            align-self: flex-start;
+        }
+
+        .weapon-note {
+            font-size: 14px;
+            color: var(--health-red);
+            font-weight: bold;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* 技能區 (7天雷達) */
+        .skills-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            background-color: var(--dark-blue);
+            color: var(--text-light);
+            padding: 15px;
+        }
+
+        .skill-box {
+            border: 2px solid #4a627a;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            background-color: #213142;
+        }
+
+        .skill-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 26px;
+            color: var(--text-light);
+            border-bottom: 1px solid #4a627a;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .radar-log {
+            font-size: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            border-left: 3px solid var(--text-gold);
+            padding-left: 10px;
+            background-color: rgba(0,0,0,0.2);
+            padding: 5px 10px;
+        }
+
+        .log-target { color: var(--text-gold); font-weight: bold; }
+        .log-time { font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+
+        #loadingOverlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(27, 40, 54, 0.95);
+            color: var(--text-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Oswald', sans-serif;
+            font-size: 40px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="commander-card">
+        <div id="loadingOverlay">ESTABLISHING UPLINK...</div>
+
+        <div class="card-header">
+            <div class="rank-insignia">︽</div>
+            <h1>ASSET COMMAND CENTER</h1>
+            <div class="star-icon">★</div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-num"><span class="cross-icon">+</span><span id="stat-total">0</span></div>
+                <div class="stat-label">TOTAL FLEET</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-num" id="stat-ready">0</div>
+                <div class="stat-label">STANDBY</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-num" id="stat-deployed" style="color:var(--text-gold);">0</div>
+                <div class="stat-label">DEPLOYED</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-num" id="stat-maintenance" style="color:var(--health-red);">0</div>
+                <div class="stat-label">OFFLINE</div>
+            </div>
+        </div>
+
+        <div class="weapons-section" id="fleetContent">
+            </div>
+
+        <div class="skills-section">
+            <h2 style="font-family:'Oswald'; margin-top:0; margin-bottom:10px; font-size: 32px; letter-spacing:2px;">BATTLE SCAN : 7-DAY INTEL</h2>
+            <div id="radarContent">
+                </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ★★★ 把下面這串引號裡的網址，換成你最新版 API 網址 ★★★
+        const API_URL = "https://script.google.com/macros/s/你的那一長串亂碼/exec";
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch(API_URL)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    processIntel(data.cars, data.bookings);
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                } else {
+                    alert("連線失敗：" + data.message);
+                }
+            })
+            .catch(err => {
+                document.getElementById('loadingOverlay').innerHTML = "UPLINK FAILED";
+            });
+        });
+
+        function processIntel(cars, bookings) {
+            const now = new Date().getTime();
+            let countTotal = cars.length;
+            let countReady = 0;
+            let countDeployed = 0;
+            let countMaint = 0;
+
+            // 預先找出目前「正在外圍出勤」的車子
+            let activeDeployments = bookings.filter(b => {
+                let s = new Date(b.startTime).getTime();
+                let e = new Date(b.endTime).getTime();
+                return now >= s && now <= e;
+            });
+            let activeCarIds = activeDeployments.map(b => b.carId);
+
+            const fleetContainer = document.getElementById('fleetContent');
+            fleetContainer.innerHTML = '';
+
+            cars.forEach(car => {
+                let finalStatus = car.status;
+                let isDeployedRightNow = activeCarIds.includes(car.id);
+                
+                // 狀態覆蓋邏輯：如果車子沒壞，但現在被借走了，狀態就顯示「出勤中」
+                if (finalStatus === '可派遣' && isDeployedRightNow) {
+                    finalStatus = '出勤中';
+                    countDeployed++;
+                } else if (finalStatus === '可派遣') {
+                    countReady++;
+                } else if (finalStatus === '報修中' || finalStatus === '維修中') {
+                    countMaint++;
+                }
+
+                // 決定徽章顏色
+                let badgeColor = "var(--status-gray)";
+                let engStatus = "UNKNOWN";
+                if(finalStatus === '可派遣') { badgeColor = "var(--status-green)"; engStatus = "READY"; }
+                if(finalStatus === '出勤中') { badgeColor = "var(--status-blue)"; engStatus = "IN FIELD"; }
+                if(finalStatus === '需注意') { badgeColor = "var(--status-orange)"; engStatus = "WARNING"; countReady++; }
+                if(finalStatus === '報修中') { badgeColor = "var(--status-red)"; engStatus = "CRITICAL"; }
+                if(finalStatus === '維修中') { badgeColor = "var(--status-gray)"; engStatus = "OFFLINE"; }
+
+                let noteHtml = car.note ? `<div class="weapon-note" style="display:block;">⚠️ INTEL: ${car.note}</div>` : '';
+
+                // 產出像武器裝備一樣的卡片
+                let item = document.createElement('div');
+                item.className = 'weapon-card';
+                item.innerHTML = `
+                    <div class="weapon-header">
+                        <span class="weapon-icon">🚗</span>
+                        <span class="weapon-name">${car.id}</span>
+                        <span class="weapon-status" style="background-color: ${badgeColor};">${engStatus}</span>
+                    </div>
+                    <div class="weapon-stats">CLASS: ${car.type}</div>
+                    ${noteHtml}
+                `;
+                fleetContainer.appendChild(item);
+            });
+
+            // 更新頂部戰術數值
+            document.getElementById('stat-total').innerText = countTotal;
+            document.getElementById('stat-ready').innerText = countReady;
+            document.getElementById('stat-deployed').innerText = countDeployed;
+            document.getElementById('stat-maintenance').innerText = countMaint;
+
+            // 渲染 7 天雷達 (深色戰術風格)
+            renderRadar(bookings);
+        }
+
+        function renderRadar(bookings) {
+            const container = document.getElementById('radarContent');
+            container.innerHTML = '';
+
+            for (let i = 0; i < 7; i++) {
+                let targetDate = new Date();
+                targetDate.setDate(targetDate.getDate() + i);
+                let dateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth()+1).padStart(2,'0')}-${String(targetDate.getDate()).padStart(2,'0')}`;
+                
+                let dayDiv = document.createElement('div');
+                dayDiv.className = 'skill-box';
+                
+                let titleDiv = document.createElement('div');
+                titleDiv.className = 'skill-title';
+                titleDiv.innerText = `DAY ${i+1} : ${dateStr} ${i===0 ? '[ TODAY ]' : ''}`;
+                dayDiv.appendChild(titleDiv);
+
+                let dayStart = new Date(targetDate.setHours(0,0,0,0)).getTime();
+                let dayEnd = new Date(targetDate.setHours(23,59,59,999)).getTime();
+                let hasBooking = false;
+
+                bookings.forEach(b => {
+                    let bStart = new Date(b.startTime).getTime();
+                    let bEnd = new Date(b.endTime).getTime();
+
+                    if (bStart <= dayEnd && bEnd >= dayStart) {
+                        hasBooking = true;
+                        let log = document.createElement('div');
+                        log.className = 'radar-log';
+                        let sTime = b.startTime.substring(11, 16);
+                        let eTime = b.endTime.substring(11, 16);
+                        
+                        log.innerHTML = `
+                            <span class="log-target">▶ TARGET: ${b.carId} (${b.driver})</span>
+                            <span class="log-time">${sTime} - ${eTime} | OP: ${b.destination}</span>
+                        `;
+                        dayDiv.appendChild(log);
+                    }
+                });
+
+                if (!hasBooking) {
+                    let noLog = document.createElement('div');
+                    noLog.className = 'radar-log';
+                    noLog.style.borderLeftColor = 'var(--status-green)';
+                    noLog.innerHTML = `<span style="color:var(--text-light); font-style:italic;">NO OPERATIONS SCHEDULED.</span>`;
+                    dayDiv.appendChild(noLog);
+                }
+
+                container.appendChild(dayDiv);
+            }
+        }
+    </script>
+</body>
+</html>
