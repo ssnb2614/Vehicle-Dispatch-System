@@ -214,10 +214,27 @@
                     // ✅ 修正點 1：去接新版 API 的 data.cars
                     availableCars = data.cars; 
                     const select = document.getElementById('carId');
+                    
                     availableCars.forEach(car => {
                         let opt = document.createElement('option');
                         opt.value = car.id;
-                        opt.textContent = car.id;
+                        
+                        // 1. 智慧組裝下拉選單的文字：車號 [狀態 - 備註]
+                        let displayText = car.id;
+                        if (car.status !== "可派遣") {
+                            displayText += ` [⚠️ ${car.status}${car.note ? ': ' + car.note : ''}]`;
+                        }
+                        opt.textContent = displayText;
+
+                        // 2. 根據狀態在下拉選單裡著色（部分 PC 瀏覽器支援，手機會以文字為主）
+                        if (car.status === "需注意") {
+                            opt.style.color = "#ef6c00"; // 戰術橘：警告但仍可選
+                        } else if (car.status === "報修中" || car.status === "維修中") {
+                            opt.style.color = "#c62828";  // 警報紅
+                            opt.style.backgroundColor = "#ffebee"; 
+                            opt.disabled = true;         // 💥 終極大招：直接禁用！不給笨蛋任何犯錯的機會
+                        }
+                        
                         select.appendChild(opt);
                     });
                     // 資料載完，關閉遮罩
