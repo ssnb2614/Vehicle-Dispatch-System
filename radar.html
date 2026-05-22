@@ -239,6 +239,23 @@
             font-size: 40px;
             z-index: 10;
         }
+
+        /* 車況檢查按鈕 */
+        .btn-inspect {
+            background-color: var(--text-gold);
+            color: var(--dark-blue);
+            border: none;
+            padding: 3px 10px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .btn-inspect:hover { background-color: #f0c040; }
+
     </style>
 </head>
 <body>
@@ -382,6 +399,7 @@
                 let targetDate = new Date();
                 targetDate.setDate(targetDate.getDate() + i);
                 let dateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth()+1).padStart(2,'0')}-${String(targetDate.getDate()).padStart(2,'0')}`;
+                let folderDateStr = `${targetDate.getFullYear()}${String(targetDate.getMonth()+1).padStart(2,'0')}${String(targetDate.getDate()).padStart(2,'0')}`;
                 
                 let dayDiv = document.createElement('div');
                 dayDiv.className = 'skill-box';
@@ -408,9 +426,14 @@
                         let sTime = new Date(b.startTime).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
                         let eTime = new Date(b.endTime).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
                         
+                        let inspectBtn = (i === 0)
+                            ? `<button class="btn-inspect" onclick="openInspectionFolder(this,'${b.carId}','${folderDateStr}')">車況檢查</button>`
+                            : '';
+
                         log.innerHTML = `
                             <span class="log-target">▶ ${b.carId} (${b.driver})</span>
                             <span class="log-time">${sTime}-${eTime} | OP: ${b.reason}；${b.destination}</span>
+                            ${inspectBtn}
                         `;
                         dayDiv.appendChild(log);
                     }
@@ -426,6 +449,27 @@
 
                 container.appendChild(dayDiv);
             }
+        }
+        function openInspectionFolder(btn, carId, dateStr) {
+            btn.textContent = '開啟中...';
+            btn.disabled = true;
+            fetch(API_URL + '?action=getFolder&carId=' + encodeURIComponent(carId) + '&date=' + dateStr)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.open(data.folderUrl, '_blank');
+                    } else {
+                        alert('無法取得資料夾：' + data.message);
+                    }
+                })
+                .catch(err => {
+                    alert('系統錯誤，請重試');
+                    console.error(err);
+                })
+                .finally(() => {
+                    btn.textContent = '車況檢查';
+                    btn.disabled = false;
+                });
         }
     </script>
 </body>
