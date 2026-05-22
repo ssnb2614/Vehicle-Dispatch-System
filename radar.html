@@ -300,7 +300,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyQoTQAMVfTRT0OXUkUd8JDHRSKGWf5Zp3CdoNBapF9Rd8NxzjogIXUkJV8QvuM27gO/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzVoaeLSDQJm-qqJI6zABLd2IjPkLsEvvSN6S5t-rtJwwG8eNyh9FNKX4tAoveBl1KfLQ/exec";
 
         window.addEventListener('DOMContentLoaded', () => {
             fetch(API_URL)
@@ -431,9 +431,11 @@
                             : '';
 
                         log.innerHTML = `
-                            <span class="log-target">▶ ${b.carId} (${b.driver})</span>
+                            <span style="display:inline-flex;align-items:center;gap:8px;">
+                                <span class="log-target">▶ ${b.carId} (${b.driver})</span>
+                                ${inspectBtn}
+                            </span>
                             <span class="log-time">${sTime}-${eTime} | OP: ${b.reason}；${b.destination}</span>
-                            ${inspectBtn}
                         `;
                         dayDiv.appendChild(log);
                     }
